@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>MatchWear — запрос не выполнен</title>
+  <style>
+    :root {
+      --bg: #eef0f4;
+      --card: #ffffff;
+      --text: #1a1d26;
+      --muted: #5c6370;
+      --accent: #5b6ee8;
+      --radius: 16px;
+      --shadow: 0 12px 40px rgba(26, 29, 38, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(91, 110, 232, 0.12), transparent),
+                  radial-gradient(900px 500px at 100% 20%, rgba(91, 110, 232, 0.08), transparent),
+                  var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 420px;
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 2rem 1.75rem;
+      text-align: center;
+      border: 1px solid rgba(26, 29, 38, 0.06);
+    }
+    .mark {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 1.25rem;
+      border-radius: 14px;
+      background: linear-gradient(145deg, var(--accent), #7b5fd4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      line-height: 1.3;
+    }
+    p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+    a {
+      display: inline-block;
+      margin-top: 0.25rem;
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .foot {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(26, 29, 38, 0.08);
+      font-size: 0.8rem;
+      color: #8b919c;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="mark" aria-hidden="true">MW</div>
+    <h1>Запрос не может быть выполнен</h1>
+    <p>
+      Сервис получил обращение, но не может его обработать в текущем виде.
+      Проверьте адрес страницы или попробуйте позже.
+    </p>
+    <p><a href="/">На главную</a></p>
+    <p class="foot">MatchWear</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,531 @@
+# =============================================================================
+# KP / локальный запуск: весь стек на одной машине без монтирования LetsEncrypt с хоста.
+# Запуск: docker compose -f docker-compose.kp-local.yml --env-file .env up -d --build
+# Скопируйте .env.example → .env и задайте секреты (JWT_SECRET_KEY, OWNER_*, BOT_TOKEN при необходимости).
+# Браузер: http://127.0.0.1/ (локальный HTTP режим) или см. README.
+# =============================================================================
+
+services:
+  # Используем внешнюю сеть для лучшего DNS резолвинга
+  # DNS настройки применяются на уровне сети
+  # PostgreSQL для Users Service
+  users-db:
+    image: postgres:16-alpine
+    container_name: timoshka_users_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshka_users
+    ports:
+      - "5433:5432"  # Другой порт, чтобы не конфликтовать
+    volumes:
+      - users_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshka_users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      timoshka_network:
+        aliases:
+          - users-db
+
+  # PostgreSQL для Products Service
+  products-db:
+    image: postgres:16-alpine
+    container_name: timoshka_products_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshka_products
+    ports:
+      - "5434:5432"
+    volumes:
+      - products_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshka_products"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      timoshka_network:
+        aliases:
+          - products-db
+
+  # PostgreSQL для Finance Service
+  finance-db:
+    image: postgres:16-alpine
+    container_name: timoshka_finance_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshka_finance
+    ports:
+      - "5435:5432"
+    volumes:
+      - finance_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshka_finance"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      timoshka_network:
+        aliases:
+          - finance-db
+
+  # PostgreSQL для Support Service
+  support-db:
+    image: postgres:16-alpine
+    container_name: timoshka_support_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshka_support
+    ports:
+      - "5436:5432"
+    volumes:
+      - support_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshka_support"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      timoshka_network:
+        aliases:
+          - support-db
+
+  # PostgreSQL для Delivery Service
+  delivery-db:
+    image: postgres:16-alpine
+    container_name: timoshka_delivery_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshka_delivery
+    ports:
+      - "5437:5432"
+    volumes:
+      - delivery_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshka_delivery"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      timoshka_network:
+        aliases:
+          - delivery-db
+
+  # PostgreSQL для Admin Web (старая БД, пока используется)
+  admin-db:
+    image: postgres:16-alpine
+    container_name: timoshka_admin_db
+    environment:
+      POSTGRES_USER: timoshka_user
+      POSTGRES_PASSWORD: timoshka_password
+      POSTGRES_DB: timoshkastore
+    ports:
+      - "5432:5432"  # Изменен внешний порт, т.к. 5432 занят на хосте
+    volumes:
+      - admin_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timoshka_user -d timoshkastore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timoshka_network
+
+  # Redis только для users-service (токены бота, сессии админки/миниаппа, browser-login)
+  users-redis:
+    image: redis:7-alpine
+    container_name: timoshka_users_redis
+    # Не 6379:6379 — на хосте часто занят (старый Redis, другой стек). Внутри сети всё равно users-redis:6379
+    ports:
+      - "16379:6379"
+    volumes:
+      - users_redis_data:/data
+    networks:
+      timoshka_network:
+        aliases:
+          - users-redis
+    restart: unless-stopped
+
+  # Redis только для products-service (кеш ленты, каталог, рекомендации, feed_history)
+  products-redis:
+    image: redis:7-alpine
+    container_name: timoshka_products_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - products_redis_data:/data
+    networks:
+      timoshka_network:
+        aliases:
+          - products-redis
+    restart: unless-stopped
+
+  # Nginx для роутинга API запросов (конфиг в образе — не зависит от volume при деплое)
+  # HTTPS: certbot на хосте; в одном сертификате SAN: matchwear.ru, www, старый домен (см. environment).
+  # http-01: mkdir -p /var/www/certbot; volume ниже; certbot certonly --webroot -w /var/www/certbot ...
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    image: timoshka_nginx
+    container_name: timoshka_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - uploads_data:/app/uploads:ro
+      # Общий том логов: users-service читает access.log для аналитики трафика
+      - nginx_access_logs:/var/log/nginx
+      # KP-local: без монтирования /etc/letsencrypt с хоста — в образе nginx уже есть заглушечные сертификаты.
+      - ./nginx/nginx.loadtest.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      users-service:
+        condition: service_started
+      products-service:
+        condition: service_started
+      finance-service:
+        condition: service_started
+      support-service:
+        condition: service_started
+      delivery-service:
+        condition: service_started
+      bot-api-bridge:
+        condition: service_started
+    environment:
+      NGINX_USE_MOUNTED_CONF: 1
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      # В kp-local /bot-api/* всегда уходит в локальный bot-api-bridge в той же docker-сети.
+      NGINX_BOT_API_PROXY_PASS: ${NGINX_BOT_API_PROXY_PASS:-http://bot-api-bridge:8010/}
+    networks:
+      timoshka_network:
+        aliases:
+          - nginx
+    restart: unless-stopped
+
+  # Users Service
+  users-service:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: timoshka_users_service
+    command: uvicorn api.users.main:app --host 0.0.0.0 --port 8001
+    depends_on:
+      users-db:
+        condition: service_healthy
+      users-redis:
+        condition: service_started
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      USERS_DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@users-db:5432/timoshka_users
+      REDIS_URL: redis://users-redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+      OWNER_ID: ${OWNER_ID}
+      OWNER_LOGIN: ${OWNER_LOGIN:-Owner}
+      OWNER_PASSWORD: ${OWNER_PASSWORD}
+      PRODUCTS_SERVICE_URL: http://products-service:8002
+      FINANCE_SERVICE_URL: http://finance-service:8003
+      DELIVERY_SERVICE_URL: http://delivery-service:8005
+      SUPPORT_SERVICE_URL: http://support-service:8004
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      BOT_TOKEN: ${BOT_TOKEN}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      # Одноразовый код входа из браузера (сек); по истечении нужен новый start / QR
+      MINIAPP_BROWSER_LOGIN_TTL_SEC: ${MINIAPP_BROWSER_LOGIN_TTL_SEC:-300}
+      # Привязка кода к IP клиента (polling + complete); false — только для отладки
+      MINIAPP_BROWSER_LOGIN_BIND_CLIENT_IP: ${MINIAPP_BROWSER_LOGIN_BIND_CLIENT_IP:-true}
+      NGINX_ACCESS_LOG_PATH: ${NGINX_ACCESS_LOG_PATH:-/var/log/nginx/shared/access.log}
+      MAXMIND_GEOLITE2_CITY: ${MAXMIND_GEOLITE2_CITY:-}
+      USERS_UPLOAD_DIR: /app/uploads
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+      - uploads_data:/app/uploads
+      - nginx_access_logs:/var/log/nginx:ro
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Products Service
+  products-service:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: timoshka_products_service
+    command: uvicorn api.products.main:app --host 0.0.0.0 --port 8002
+    depends_on:
+      products-db:
+        condition: service_healthy
+      products-redis:
+        condition: service_started
+      users-service:
+        condition: service_started
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      PRODUCTS_DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@products-db:5432/timoshka_products
+      REDIS_URL: redis://products-redis:6379/0
+      ADMIN_JWT_REDIS_URL: redis://users-redis:6379/0
+      USERS_SERVICE_URL: http://users-service:8001
+      FINANCE_SERVICE_URL: http://finance-service:8003
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+      BOT_TOKEN: ${BOT_TOKEN}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      MINI_APP_NAME: ${MINI_APP_NAME:-}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      DELIVERY_SERVICE_URL: http://delivery-service:8005
+      SHARE_PUBLIC_WEB_ORIGIN: ${SHARE_PUBLIC_WEB_ORIGIN:-}
+      SHARE_PUBLIC_CATALOG_SHARE_PATH: ${SHARE_PUBLIC_CATALOG_SHARE_PATH:-}
+      # Чекаут: true/1 — 403 на POST /orders, /orders/checkout, /orders/checkout/preview. Из корневого .env через подстановку Compose.
+      ORDER_CHECKOUT_DISABLED: ${ORDER_CHECKOUT_DISABLED:-true}
+      # StoreKPLite: 1 — без промокодов на чекауте (lite-режим products-service)
+      STORE_KP_LITE: ${STORE_KP_LITE:-1}
+      # Страхование груза в расчёте доставки (чекаут) и согласованность с delivery-service при CDEK_ADD_INSURANCE_TO_ORDERS=1
+      CDEK_ADD_INSURANCE_TO_ORDERS: ${CDEK_ADD_INSURANCE_TO_ORDERS:-1}
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+      - uploads_data:/app/uploads
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Finance Service
+  finance-service:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: timoshka_finance_service
+    command: uvicorn api.finance.main:app --host 0.0.0.0 --port 8003
+    depends_on:
+      finance-db:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      FINANCE_DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@finance-db:5432/timoshka_finance
+      ADMIN_JWT_REDIS_URL: redis://users-redis:6379/0
+      PRODUCTS_SERVICE_URL: http://products-service:8002
+      USERS_SERVICE_URL: http://users-service:8001
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+      YOOKASSA_SHOP_ID: ${YOOKASSA_SHOP_ID}
+      YOOKASSA_API_TOKEN: ${YOOKASSA_API_TOKEN}
+      BOT_TOKEN: ${BOT_TOKEN}
+    ports:
+      - "8003:8003"
+    volumes:
+      - .:/app
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Support Service
+  support-service:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: timoshka_support_service
+    command: uvicorn api.support.main:app --host 0.0.0.0 --port 8004
+    depends_on:
+      support-db:
+        condition: service_healthy
+      users-service:
+        condition: service_started
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      SUPPORT_DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@support-db:5432/timoshka_support
+      ADMIN_JWT_REDIS_URL: redis://users-redis:6379/0
+      USERS_SERVICE_URL: http://users-service:8001
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+    ports:
+      - "8004:8004"
+    volumes:
+      - .:/app
+      - uploads_data:/app/uploads
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Delivery Service
+  delivery-service:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: timoshka_delivery_service
+    command: uvicorn api.delivery.main:app --host 0.0.0.0 --port 8005
+    depends_on:
+      delivery-db:
+        condition: service_healthy
+      users-service:
+        condition: service_started
+      finance-service:
+        condition: service_started
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      DELIVERY_DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@delivery-db:5432/timoshka_delivery
+      ADMIN_JWT_REDIS_URL: redis://users-redis:6379/0
+      USERS_SERVICE_URL: http://users-service:8001
+      FINANCE_SERVICE_URL: http://finance-service:8003
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+      BOT_TOKEN: ${BOT_TOKEN}
+      CDEK_ACCOUNT: ${CDEK_ACCOUNT}
+      CDEK_SECRET: ${CDEK_SECRET}
+      CDEK_API_BASE_URL: ${CDEK_API_BASE_URL:-https://api.edu.cdek.ru/v2}
+      # Код ПВЗ СДЭК, откуда сдаём посылку (POST /orders → shipment_point). Пусто в .env — дефолт USS3 в коде.
+      CDEK_SENDER_SHIPMENT_POINT: ${CDEK_SENDER_SHIPMENT_POINT:-USS3}
+      # false — стандартный СДЭК (ПВЗ, расчёт). true — CDEK_MANUAL (адрес вручную, без суммы в чеке).
+      CDEK_PUBLIC_AS_MANUAL_ADDRESS: ${CDEK_PUBLIC_AS_MANUAL_ADDRESS:-false}
+      # 1 — в POST /orders передаётся services INSURANCE по сумме товаров (из корневого .env)
+      CDEK_ADD_INSURANCE_TO_ORDERS: ${CDEK_ADD_INSURANCE_TO_ORDERS:-1}
+    ports:
+      - "8005:8005"
+    volumes:
+      - .:/app
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Bot API bridge (локально на этой же машине, для /bot-api/* через nginx).
+  bot-api-bridge:
+    build:
+      context: .
+      dockerfile: bot_api_service/Dockerfile
+    container_name: timoshka_bot_api_bridge
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+    expose:
+      - "8010"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Telegram-бот (локально, в том же compose).
+  bot_tg:
+    build:
+      context: .
+      dockerfile: bot_tg/Dockerfile
+    container_name: timoshka_bot_tg
+    command: python -m bot_tg.main
+    depends_on:
+      users-service:
+        condition: service_started
+      bot-api-bridge:
+        condition: service_started
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      OWNER_ID: ${OWNER_ID}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      API_BASE_URL: ${API_BASE_URL:-http://127.0.0.1}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      USERS_SERVICE_URL: ${USERS_SERVICE_URL:-http://users-service:8001}
+    volumes:
+      - .:/app
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Admin Web Backend (ТОЛЬКО ДЛЯ РЕФЕРЕНСА - закомментировано)
+  # Старая HTML админка используется только как референс функционала
+  # Вся авторизация и API теперь через микросервисы (users-service, products-service и т.д.)
+  # Если нужно запустить для референса, раскомментируйте:
+  # admin_web:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: timoshka_admin_web
+  #   command: uvicorn admin_web.main:app --host 0.0.0.0 --port 8000
+  #   depends_on:
+  #     admin-db:
+  #       condition: service_healthy
+  #   environment:
+  #     OWNER_ID: ${OWNER_ID}
+  #     DATABASE_URL: postgresql+asyncpg://timoshka_user:timoshka_password@admin-db:5432/timoshkastore
+  #     SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+  #     BOT_TOKEN: ${BOT_TOKEN}
+  #     JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+  #   expose:
+  #     - "8000"
+  #   volumes:
+  #     - .:/app
+  #     - uploads_data:/app/uploads
+  #   networks:
+  #     - timoshka_network
+  #   restart: unless-stopped
+
+  # Admin React (скрытый путь в nginx: /x9d4k2m7p1/admin/)
+  admin_react:
+    build:
+      context: ./admin_react
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_URL: /x9d4k2m7p1/admin
+        REACT_APP_API_URL: /api
+    container_name: timoshka_admin_react
+    depends_on:
+      - nginx
+      - users-service
+      - products-service
+      - finance-service
+      - support-service
+    expose:
+      - "80"
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+  # Telegram Mini App (React, отдельная папка miniapp_tg)
+  miniapp_tg:
+    build:
+      context: ./miniapp_tg
+      dockerfile: Dockerfile
+      args:
+        # Должен совпадать с location /miniapp/ у внешнего nginx и с URL в BotFather
+        PUBLIC_URL: /miniapp
+        # PWA manifest (start_url / scope): тот же публичный URL, что API_BASE_URL (origin без пути)
+        REACT_APP_PUBLIC_ORIGIN: ${API_BASE_URL:-http://127.0.0.1}
+        REACT_APP_TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+        # Ключ карт: в .env задать YANDEX_MAPS_API_KEY=... или REACT_APP_YANDEX_MAPS_API_KEY=...
+        REACT_APP_YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY:-${REACT_APP_YANDEX_MAPS_API_KEY:-}}
+    container_name: timoshka_miniapp_tg
+    depends_on:
+      - nginx
+    expose:
+      - "80"
+    networks:
+      - timoshka_network
+    restart: unless-stopped
+
+volumes:
+  nginx_access_logs:
+  users_db_data:
+  products_db_data:
+  finance_db_data:
+  support_db_data:
+  delivery_db_data:
+  admin_db_data:
+  uploads_data:
+  users_redis_data:
+  products_redis_data:
+
+networks:
+  timoshka_network:
+    driver: bridge

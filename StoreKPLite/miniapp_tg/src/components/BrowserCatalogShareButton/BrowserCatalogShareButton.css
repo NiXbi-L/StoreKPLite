@@ -1,0 +1,49 @@
+.browser-catalog-share {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tg-theme-link-color, #2481cc);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.browser-catalog-share:active {
+  opacity: 0.72;
+}
+
+@media (hover: hover) {
+  .browser-catalog-share:hover {
+    background: var(--bg-secondary, rgba(0, 0, 0, 0.06));
+  }
+}
+
+.browser-catalog-share__icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.browser-catalog-share__hint {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-primary, #171717);
+  background: var(--bg-tertiary, #eee);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}

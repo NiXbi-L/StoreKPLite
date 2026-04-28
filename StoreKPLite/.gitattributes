@@ -1,0 +1,2 @@
+# Shell scripts: всегда LF и сохранять executable bit при клонировании на Linux
+*.sh text eol=lf

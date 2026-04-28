@@ -1,0 +1,1 @@
+# Utils for products service

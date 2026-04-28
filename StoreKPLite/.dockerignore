@@ -1,0 +1,51 @@
+# ============================================
+# Сокращение контекста сборки (context: .)
+# Иначе при docker compose up --build на сервер уходит вся репа + node_modules = десятки ГБ
+# ============================================
+
+# Git (часто 100+ MB)
+.git
+.gitignore
+.github
+
+# Env (не копировать секреты в образ)
+.env
+.env.*
+!.env.example
+
+# Node-приложения целиком (api/bot_tg не используют; контекст только для api/Dockerfile и bot_tg/Dockerfile)
+miniapp_tg
+
+# Nginx (собирается отдельно, в образ api не нужен)
+nginx
+
+# Загрузки (в проде монтируются volume, в образ не нужны)
+uploads
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.pytest_cache
+.mypy_cache
+.coverage
+htmlcov
+.venv
+venv
+env
+*.egg-info
+dist
+build
+*.egg
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.temp
+.DS_Store
+
+# IDE / прочее
+.idea
+.vscode
+*.swp
+*.swo

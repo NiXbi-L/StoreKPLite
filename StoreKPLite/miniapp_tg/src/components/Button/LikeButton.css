@@ -1,0 +1,40 @@
+.like-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  border: none;
+  border-radius: 25px;
+  background: var(--text-primary);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.like-btn:hover {
+  opacity: 0.7;
+}
+
+.like-btn:active {
+  transform: scale(0.95);
+}
+
+.like-btn:focus {
+  outline: none;
+}
+
+.like-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.like-btn--liked {
+  opacity: 1;
+}
+
+.like-btn--liked:hover {
+  opacity: 0.9;
+}

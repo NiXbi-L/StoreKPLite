@@ -1,0 +1,75 @@
+# =============================================================================
+# Зарубежный стек: Telegram-бот (aiogram) + прокси Bot API для РФ-бэкенда.
+# На основном сервере (РФ) в docker-compose.yml этих сервисов нет.
+#
+# Запуск (на сервере с доступом к api.telegram.org), из корня репозитория:
+#   cp .env.telegram-overseas.example .env.telegram-overseas   # или общий .env
+#   docker compose -f docker-compose.telegram-overseas.yml --env-file .env.telegram-overseas up -d --build
+#
+# Переменные: см. .env.telegram-overseas.example
+#
+# --- Сосуществование с 3X-UI на том же хосте/домене (например nixbi.ru) ---
+# 3X-UI часто уже слушает 443 и раздаёт панель/Xray. Не вешайте второй процесс на тот же :443.
+# Варианты:
+#   1) Поддомен только под bridge (рекомендуется): bridge.nixbi.ru → nginx/Caddy → 127.0.0.1:8010
+#      Сертификат отдельно (certbot -d bridge.nixbi.ru). 3X-UI остаётся на nixbi.ru как было.
+#   2) Один nginx «перед» всем: server_name nixbi.ru; location /bot-api/ → proxy_pass 127.0.0.1:8010;
+#      остальное — как у 3X-UI (если панель не забирает весь root без location).
+#   3) Bridge только на localhost:8010, без публичного порта — тогда с РФ nginx proxy_pass на IP:8010
+#      по приватной сети/VPN (если есть), иначе нужен публичный HTTPS как в п.1–2.
+#
+# РФ-nginx (matchwear.ru и т.д.) шлёт /bot-api/ на этот хост — см. deploy/nginx-bot-api-location.example.conf
+# =============================================================================
+
+services:
+  bot-api-bridge:
+    build:
+      context: .
+      dockerfile: bot_api_service/Dockerfile
+    container_name: timoshka_bot_api_bridge
+    env_file:
+      - path: .env.telegram-overseas
+        required: false
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+    ports:
+      # При 3X-UI на 443: снаружи отдайте bridge через nginx на поддомене; тогда смените на "127.0.0.1:8010:8010"
+      - "${BOT_API_BRIDGE_BIND:-8010}:8010"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - telegram_overseas
+    restart: unless-stopped
+
+  bot_tg:
+    build:
+      context: .
+      dockerfile: bot_tg/Dockerfile
+    container_name: timoshka_bot_tg
+    command: python -m bot_tg.main
+    env_file:
+      - path: .env.telegram-overseas
+        required: false
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      OWNER_ID: ${OWNER_ID}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-internal-secret-token-change-in-production}
+      # Публичный URL РФ-API (куда бот шлёт internal/set-phone-by-telegram): https://matchwear.ru и т.п.
+      API_BASE_URL: ${API_BASE_URL}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      # Если users не под /api/users — задайте полный URL (иначе из API_BASE_URL соберётся .../api/users)
+      USERS_SERVICE_URL: ${USERS_SERVICE_URL:-}
+    volumes:
+      - .:/app
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - telegram_overseas
+    restart: unless-stopped
+
+networks:
+  telegram_overseas:
+    driver: bridge

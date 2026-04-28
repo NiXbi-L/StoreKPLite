@@ -1,0 +1,4 @@
+# RFC 9116 — контакт для сообщений об уязвимостях (замените email на рабочий).
+Contact: mailto:security@matchwear.ru
+Preferred-Languages: ru, en
+Canonical: https://matchwear.ru/.well-known/security.txt

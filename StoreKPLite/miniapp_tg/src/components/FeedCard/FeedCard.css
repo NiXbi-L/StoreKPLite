@@ -1,0 +1,153 @@
+/* Карточка товара для ленты: макет с border-radius 32px, градиент, индикаторы фото */
+
+.feed-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border-radius: 32px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-card:focus {
+  outline: none;
+}
+
+.feed-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Фон — текущее фото */
+.feed-card__bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-tertiary);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Индикаторы фото на всю ширину карточки */
+.feed-card__indicators {
+  position: absolute;
+  top: 28px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.feed-card__indicator {
+  flex: 1;
+  min-width: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--text-disabled);
+}
+
+.feed-card__indicator--active {
+  background: var(--bg-secondary);
+}
+
+/* Контейнер контента на всю площадь карточки (как mate-box-content в Lunch-mate) */
+.feed-card__content-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 24px 12px 16px;
+  border-radius: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 6px;
+  /* Сверху: затемняющий градиент под индикаторы; снизу: подложка под текст, середина фото без затемнения */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 22%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.65) 100%);
+  z-index: 1;
+  touch-action: none;
+  user-select: none;
+}
+
+.feed-card__content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Поворот при лайке/дизлайке (как в Lunch-mate) */
+.feed-card.feed-card--like-active {
+  transform-origin: 50% 100%;
+  transform: rotate(3deg);
+  transition: transform 0.2s ease-out;
+}
+
+.feed-card.feed-card--dislike-active {
+  transform-origin: 50% 100%;
+  transform: rotate(-3deg);
+  transition: transform 0.2s ease-out;
+}
+
+/* Улетание карточки при лайке/дизлайке */
+.feed-card.feed-card--exit-right {
+  animation: feed-card-exit-right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+}
+
+.feed-card.feed-card--exit-left {
+  animation: feed-card-exit-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+}
+
+@keyframes feed-card-exit-right {
+  to {
+    transform: translateX(120%) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+@keyframes feed-card-exit-left {
+  to {
+    transform: translateX(-120%) rotate(-25deg);
+    opacity: 0;
+  }
+}
+
+/* Название: обрезка с ..., выравнивание по левому краю */
+.feed-card__title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 100%;
+  text-align: left;
+  color: var(--text-dark-primary);
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Цена */
+.feed-card__price {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 200%;
+  text-align: left;
+  color: var(--text-dark-secondary);
+  margin: 0;
+  width: 100%;
+}
+

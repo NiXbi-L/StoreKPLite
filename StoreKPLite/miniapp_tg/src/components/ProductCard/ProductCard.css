@@ -1,0 +1,103 @@
+/* Карточка товара: размер от контейнера, пропорции 180/239, фон — первое фото, поверх градиент и контент */
+
+.product-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 180 / 239;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.25);
+  cursor: var(--product-card-cursor, pointer);
+  transition: box-shadow 0.2s ease;
+}
+
+.product-card:focus {
+  outline: none;
+}
+
+.product-card:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.product-card:hover {
+  box-shadow: 0 0 14px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Фон — первое фото товара */
+.product-card__bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-tertiary);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Оверлей с градиентом на всю карточку */
+.product-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  border-radius: 16px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(102, 102, 102, 0) 38.46%, #000 100%);
+}
+
+/* Контент: три текстовых блока сверху вниз */
+.product-card__content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+}
+
+.product-card__title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 80%;
+  text-align: left;
+  color: var(--text-dark-primary);
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-card__price {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 120%;
+  text-align: left;
+  color: var(--text-dark-secondary);
+  margin: 0;
+  width: 100%;
+}
+
+.product-card__sizes {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 120%;
+  text-align: left;
+  color: var(--text-dark-tertiary);
+  margin: 0;
+  width: 100%;
+}
+
+/* Кнопка лайка в правом верхнем углу */
+.product-card__like-wrap {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+}

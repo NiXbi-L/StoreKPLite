@@ -1,0 +1,217 @@
+.address-edit-page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.address-edit-page__phone-required {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.address-edit-page__phone-required-text {
+  margin: 0;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.address-edit-page__phone-required-btn {
+  align-self: center;
+  min-width: 200px;
+}
+
+.address-edit-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 25px;
+  padding: 13px;
+  width: 100%;
+  height: 50px;
+  background: var(--text-primary);
+  opacity: 0.5;
+  box-sizing: border-box;
+}
+
+.address-edit-page__header-text {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 75%;
+  text-align: center;
+  color: var(--bg-primary);
+}
+
+.address-edit-page__form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.address-edit-page__methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.address-edit-page__method-btn {
+  width: 100%;
+  border-radius: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-heavy);
+  background: var(--bg-secondary);
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.address-edit-page__method-btn--active {
+  border-color: var(--text-primary);
+}
+
+.address-edit-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.address-edit-page__label {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 133%;
+  color: var(--text-tertiary);
+}
+
+.address-edit-page__input,
+.address-edit-page__input-textarea {
+  width: 100%;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-heavy);
+  background: var(--bg-secondary);
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+  box-sizing: border-box;
+}
+
+.address-edit-page__input-textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.address-edit-page__pvz-button {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  border-radius: 16px;
+  padding: 0 14px;
+  min-height: 50px;
+  width: 100%;
+  border: 1px solid var(--border-heavy);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.address-edit-page__pvz-label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+}
+
+.address-edit-page__pvz-placeholder {
+  opacity: 0.7;
+}
+
+.address-edit-page__pvz-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+
+.address-edit-page__pvz-arrow svg {
+  display: block;
+}
+
+.address-edit-page__footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.address-edit-page__footer-inner {
+  width: calc(100% - 32px);
+  max-width: 480px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.address-edit-page__delete-btn {
+  order: 1;
+}
+
+.address-edit-page__footer-inner .cart-page__checkout-btn {
+  order: 0;
+}
+
+.address-edit-page__readonly-address {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-heavy);
+  background: var(--bg-secondary);
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
+.address-edit-page__footer--hidden {
+  display: none;
+}
+

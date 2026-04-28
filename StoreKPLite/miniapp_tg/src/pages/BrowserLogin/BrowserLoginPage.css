@@ -1,0 +1,283 @@
+.browser-login-page {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  min-height: var(--vvh, 100vh);
+  width: 100%;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-primary) 42%, var(--bg-primary) 100%);
+}
+
+.browser-login-page--restricted {
+  justify-content: center;
+}
+
+.browser-login-page__shell {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.browser-login-page__hero {
+  text-align: center;
+}
+
+.browser-login-page__brand {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.browser-login-page__title {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.browser-login-page__subtitle {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.browser-login-page__methods {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.browser-login-page__footer {
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.browser-login-page__footer-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.browser-login-page__legal-link {
+  color: var(--accent, #2481cc);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.browser-login-page__legal-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.browser-login-page__restricted-text {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Карточка способа входа (Telegram и будущие) */
+.browser-login-card {
+  box-sizing: border-box;
+  padding: 24px 22px;
+  border-radius: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 24px var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.browser-login-card--telegram {
+  padding: 16px 18px;
+}
+
+.browser-login-card__row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.browser-login-card__tg-mark {
+  flex-shrink: 0;
+  line-height: 0;
+  color: #26a5e4;
+}
+
+.browser-login-card__tg-logo {
+  display: block;
+}
+
+.browser-login-card__tg-btn {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #2aabee;
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.browser-login-card__tg-btn:disabled {
+  opacity: 0.85;
+  cursor: wait;
+}
+
+.browser-login-card__tg-btn:not(:disabled):active {
+  background: #1f8bc4;
+}
+
+@media (hover: hover) {
+  .browser-login-card__tg-btn:not(:disabled):hover {
+    background: #239fd9;
+  }
+}
+
+.browser-login-card__tg-btn--link {
+  text-align: center;
+}
+
+.browser-login-card__tg-btn-inner,
+.browser-login-card__tg-wait {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.browser-login-card__tg-wait {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.browser-login-card__error {
+  margin: 0;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--border-error);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.browser-login-card__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: browser-login-spin 0.75s linear infinite;
+}
+
+.browser-login-card__spinner--inline {
+  border-color: var(--border-light);
+  border-top-color: var(--accent);
+}
+
+@keyframes browser-login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.browser-login-card__desktop-prompt {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.browser-login-card__desktop-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.browser-login-card__desktop-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.browser-login-card__desktop-btn--primary {
+  border: none;
+  background: #2aabee;
+  color: #fff;
+}
+
+.browser-login-card__desktop-btn--primary:active {
+  background: #1f8bc4;
+}
+
+@media (hover: hover) {
+  .browser-login-card__desktop-btn--primary:hover {
+    background: #239fd9;
+  }
+}
+
+.browser-login-card__desktop-btn--secondary {
+  border: 1px solid var(--border-light);
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.browser-login-card__desktop-btn--secondary:active {
+  opacity: 0.92;
+}
+
+@media (hover: hover) {
+  .browser-login-card__desktop-btn--secondary:hover {
+    border-color: var(--border-medium, var(--border-light));
+    background: var(--bg-secondary);
+  }
+}
+
+.browser-login-card__desktop-hint {
+  margin: 0;
+  width: 100%;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-tertiary);
+  text-align: center;
+}

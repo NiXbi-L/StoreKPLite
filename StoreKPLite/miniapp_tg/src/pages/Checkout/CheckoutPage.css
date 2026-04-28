@@ -1,0 +1,385 @@
+/* Страница оформления заказа */
+.checkout-page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Место под фиксированную панель «Оплатить» (кнопка + подсказка), как на странице товара */
+.checkout-page--with-fixed-pay {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+}
+
+.checkout-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 25px;
+  padding: 13px;
+  width: 100%;
+  height: 50px;
+  background: var(--text-primary);
+  opacity: 0.5;
+  box-sizing: border-box;
+}
+
+.checkout-page__header-text {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 75%;
+  text-align: center;
+  color: var(--bg-primary);
+}
+
+.checkout-page__status {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.checkout-page__status--error {
+  color: var(--border-error, #c00);
+}
+
+/* Блок состава заказа */
+.checkout-page__composition {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 16px;
+  padding: 16px;
+  width: 100%;
+  height: auto;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3);
+  background: var(--bg-secondary);
+  box-sizing: border-box;
+}
+
+.checkout-page__composition-items {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.checkout-page__composition-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-heavy);
+  padding: 4px 0;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.checkout-page__composition-row:last-of-type {
+  border-bottom: none;
+}
+
+/* Контейнер фото товара */
+.checkout-page__composition-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.checkout-page__composition-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.checkout-page__composition-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+/* Контейнер название | размер | тип */
+.checkout-page__composition-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 10px;
+  padding: 8px 0;
+  min-width: 0;
+  flex: 1;
+  height: auto;
+}
+
+.checkout-page__composition-title-text {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 8px;
+  line-height: 150%;
+  text-align: left;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Контейнер цены */
+.checkout-page__composition-price-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px 0;
+  width: 103px;
+  min-width: 103px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.checkout-page__composition-price-text {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 8px;
+  line-height: 150%;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* Итоговая цена */
+.checkout-page__composition-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding-top: 4px;
+}
+
+.checkout-page__composition-total-label {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-primary);
+}
+
+.checkout-page__composition-total-value {
+  font-family: var(--font-family);
+  font-weight: 590;
+  font-size: 14px;
+  line-height: 114%;
+  text-align: justify;
+  color: var(--text-primary);
+}
+
+.checkout-page__composition-total--strong .checkout-page__composition-total-label,
+.checkout-page__composition-total--strong .checkout-page__composition-total-value {
+  font-weight: 700;
+}
+
+/* Блок способ доставки */
+.checkout-page__delivery {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.checkout-page__delivery-label {
+  margin: 0;
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+}
+
+.checkout-page__delivery-btn {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 16px;
+  padding: 16px;
+  width: 100%;
+  min-height: 0;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3);
+  background: var(--bg-secondary);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.checkout-page__delivery-btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.checkout-page__delivery-method-name {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.checkout-page__delivery-address {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.checkout-page__delivery-arrow {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkout-page__delivery-cost {
+  margin: 0;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-tertiary);
+}
+
+.checkout-page__cdek-manual-notice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 140%;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 2px 4px 0 var(--card-shadow);
+}
+
+.checkout-page__promo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.checkout-page__promo-label {
+  margin: 0;
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+}
+
+.checkout-page__promo-input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid var(--border-heavy, #ccc);
+  padding: 12px 14px;
+  font-family: var(--font-family);
+  font-size: 15px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.checkout-page__promo-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--border-error, #c00);
+}
+
+/* Фиксированная панель оплаты внизу экрана */
+.checkout-page__pay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-primary);
+  box-sizing: border-box;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.checkout-page__pay--hidden {
+  display: none;
+}
+
+.checkout-page__pay-btn {
+  width: 100%;
+}
+
+.checkout-page__hint {
+  margin: 8px 2px 0;
+  font-family: var(--font-family);
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.checkout-page__offer-link {
+  color: var(--text-primary, #171717);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.checkout-page__offer-link:active {
+  opacity: 0.85;
+}

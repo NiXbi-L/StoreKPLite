@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- Яндекс/боты: абсолютный URL; nginx отдаёт site-root-static/favicon.ico (см. build_applogo_ico.py) -->
+    <link rel="icon" href="https://matchwear.ru/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="https://matchwear.ru/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="%PUBLIC_URL%/applogo/Logo192.ico" type="image/x-icon" />
+    <link rel="icon" type="image/jpeg" sizes="192x192" href="%PUBLIC_URL%/applogo/Logo192.jpg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="%PUBLIC_URL%/applogo/Logo192.jpg" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbfbf8" />
+    <meta
+      name="description"
+      content="MatchWear — онлайн-витрина одежды и обуви: каталог, корзина, доставка. Работает в браузере и в Telegram."
+    />
+    <link rel="canonical" href="https://matchwear.ru/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MatchWear" />
+    <meta property="og:title" content="MatchWear — магазин одежды онлайн" />
+    <meta
+      property="og:description"
+      content="Каталог, корзина и заказы. Удобно в браузере и в Telegram."
+    />
+    <meta property="og:url" content="https://matchwear.ru/" />
+    <meta property="og:image" content="https://matchwear.ru/miniapp/applogo/Logo192.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="192" />
+    <meta property="og:image:height" content="192" />
+    <meta property="og:locale" content="ru_RU" />
+    <!-- RU-PRI — регион присутствия/базы (Приморье), не граница доставки. Доставка — по зонам СДЭК. Вебмастер → Региональность. -->
+    <meta name="geo.region" content="RU-PRI" />
+    <meta name="geo.placename" content="Приморский край, Россия" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content="https://matchwear.ru/miniapp/applogo/Logo192.jpg" />
+    <meta name="twitter:title" content="MatchWear — магазин одежды онлайн" />
+    <meta
+      name="twitter:description"
+      content="Каталог, корзина и заказы. Удобно в браузере и в Telegram."
+    />
+    <title>MatchWear</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "MatchWear",
+        "url": "https://matchwear.ru/",
+        "description": "Онлайн-витрина одежды и обуви: каталог, корзина, доставка.",
+        "inLanguage": "ru-RU",
+        "logo": "https://matchwear.ru/miniapp/applogo/Logo192.jpg",
+        "publisher": {
+          "@type": "Organization",
+          "name": "MatchWear",
+          "url": "https://matchwear.ru/",
+          "description": "Доставка службой СДЭК в города и ПВЗ по её зонам; основной рынок — Россия и страны СНГ.",
+          "areaServed": [
+            { "@type": "Country", "name": "Россия" },
+            { "@type": "Country", "name": "Казахстан" },
+            { "@type": "Country", "name": "Беларусь" },
+            { "@type": "Country", "name": "Армения" },
+            { "@type": "Country", "name": "Кыргызстан" }
+          ]
+        }
+      }
+    </script>
+    <script>
+      (function () {
+        var ua = navigator.userAgent || '';
+        var loc = (location.search || '') + (location.hash || '');
+        var hasWebAppDataInUrl = /tgWebAppData=/.test(loc);
+        var uaLooksTelegram = /Telegram/i.test(ua);
+        var path = location.pathname || '';
+        // Префикс из сборки (напр. /miniapp) — путь Mini App в Telegram, не браузерная точка входа. Браузер — корень /.
+        var deployBase = '%PUBLIC_URL%'.replace(/\/$/, '');
+        var onMiniappPath = false;
+        if (deployBase) {
+          onMiniappPath =
+            path === deployBase ||
+            path === deployBase + '/' ||
+            path.indexOf(deployBase + '/') === 0;
+        }
+
+        // Режим WebView (отступы, isTelegramWebAppEnvironment): только явные признаки Telegram, не путь.
+        var inTelegramWebView = hasWebAppDataInUrl || uaLooksTelegram;
+        window.__MINIAPP_IN_TELEGRAM_WEBVIEW__ = inTelegramWebView;
+
+        // Случайный заход в Safari на /miniapp/ без WebApp — уводим на корень (нормальный браузерный вход), hash/query сохраняем.
+        // Отладка: ?allow_miniapp_browser=1
+        var allowMiniappInBrowser = /[?&]allow_miniapp_browser=1(?:&|$)/.test(location.search || '');
+        if (onMiniappPath && !inTelegramWebView && !allowMiniappInBrowser) {
+          location.replace('/' + (location.search || '') + (location.hash || ''));
+          return;
+        }
+
+        // SDK: под префиксом PUBLIC_URL — даже при кривом UA; иначе только initData в URL или UA Telegram.
+        var loadTelegramSdk = hasWebAppDataInUrl || uaLooksTelegram || onMiniappPath;
+
+        var root = document.documentElement;
+        if (!inTelegramWebView) {
+          root.style.setProperty('--tg-content-safe-area-inset-top', '16px');
+          root.style.setProperty('--ios-safe-area-inset-top', '0px');
+        }
+        if (loadTelegramSdk) {
+          document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
+        }
+      })();
+    </script>
+    <!-- Yandex Maps API загружается динамически на странице выбора ПВЗ (чтобы Referer был корректным в Telegram WebView) -->
+  </head>
+  <body>
+    <noscript>Для работы приложения включите JavaScript.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

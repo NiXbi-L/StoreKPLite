@@ -1,0 +1,26 @@
+{
+  "name": "MatchWear",
+  "short_name": "MatchWear",
+  "description": "Онлайн-витрина одежды и обуви, корзина, доставка",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fbfbf8",
+  "theme_color": "#fbfbf8",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "applogo/Logo192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "applogo/Logo512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

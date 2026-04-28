@@ -1,0 +1,709 @@
+# Шаблон: при старте контейнера docker-entrypoint-nginx.sh подставляет ${NGINX_REFERER_MAP_PATTERN} из API_BASE_URL.
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    server_tokens off;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/shared/access.log main;
+    error_log /var/log/nginx/error.log;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    # Rate-limit по $binary_remote_addr: отдельная зона на каждый микросервис + статика uploads
+    limit_req_zone $binary_remote_addr zone=users_api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=products_api:10m rate=20r/s;
+    limit_req_zone $binary_remote_addr zone=finance_api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=support_api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=delivery_api:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=uploads_static:10m rate=50r/s;
+    limit_req_zone $binary_remote_addr zone=admin_login_limit:1m rate=5r/m;
+
+    limit_req_status 429;
+
+    # Referer: браузер — только с origin из API_BASE_URL (подставляется при старте контейнера) или web.telegram.org.
+    # Пустой Referer — только с частных сетей (Docker). Исключение: /api/finance/payments/webhook (ЮKassa).
+    map $http_referer $api_ref_sigil {
+        default                           "n";
+        ""                                "e";
+        "~*${NGINX_REFERER_MAP_PATTERN}"  "g";
+        "~*^https://web\.telegram\.org/"  "g";
+        # Пока старый домен в DNS: запросы к API после редиректа могут ещё нести этот Referer
+        "~*^https://miniapp\\.nixbi\\.ru/"  "g";
+    }
+    geo $api_ref_internal {
+        default 0;
+        127.0.0.0/8 1;
+        10.0.0.0/8 1;
+        172.16.0.0/12 1;
+        192.168.0.0/16 1;
+    }
+    # Ключ: буква referer (g/e/n) + 0/1 из geo. g* и e1 — пускаем; e0 и n* — 403.
+    map $api_ref_sigil$api_ref_internal $api_referer_block {
+        default 1;
+        g0      0;
+        g1      0;
+        e1      0;
+        e0      1;
+        n0      1;
+        n1      1;
+    }
+
+    # Увеличенный лимит для bulk-загрузки товаров с большим количеством фото.
+    client_max_body_size 200M;
+
+    # DNS resolver для динамического разрешения имен контейнеров
+    # 127.0.0.11 - это встроенный DNS resolver Docker
+    resolver 127.0.0.11 valid=5s ipv6=off;
+
+    # HTTP: certbot http-01 (опционально смонтируйте webroot → /var/www/certbot), остальное → HTTPS
+    server {
+        listen 80 default_server;
+        server_name _;
+        location ^~ /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+            default_type "text/plain";
+            try_files $uri =404;
+        }
+        location / {
+            return 301 https://$host$request_uri;
+        }
+    }
+
+    ##BEGIN_LEGACY_REDIRECT##
+    # Старый домен → 308 на канонический (включается только если NGINX_LEGACY_SERVER_NAMES не пустой)
+    server {
+        listen 443 ssl;
+        server_name ${NGINX_LEGACY_SERVER_NAMES};
+
+        ssl_certificate     /etc/letsencrypt/live/${NGINX_SSL_LIVE_DIR}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${NGINX_SSL_LIVE_DIR}/privkey.pem;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        return 308 https://${NGINX_CANONICAL_HOST}$request_uri;
+    }
+    ##END_LEGACY_REDIRECT##
+
+    server {
+        listen 443 ssl default_server;
+        server_name ${NGINX_PRIMARY_SERVER_NAMES};
+
+        # SSL: в образе — самоподписанный; в проде монтируется /etc/letsencrypt (см. docker-compose).
+        ssl_certificate     /etc/letsencrypt/live/${NGINX_SSL_LIVE_DIR}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${NGINX_SSL_LIVE_DIR}/privkey.pem;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Content-Security-Policy "upgrade-insecure-requests" always;
+
+        # Ошибки, которые отдаёт сам nginx (Referer/deny/limit_client_body и т.д.): единая страница, код в заголовке сохраняем через =код
+        error_page 400 =400 /errors/matchwear-error.html;
+        error_page 401 =401 /errors/matchwear-error.html;
+        error_page 402 =402 /errors/matchwear-error.html;
+        error_page 403 =403 /errors/matchwear-error.html;
+        error_page 404 =404 /errors/matchwear-error.html;
+        error_page 405 =405 /errors/matchwear-error.html;
+        error_page 406 =406 /errors/matchwear-error.html;
+        error_page 408 =408 /errors/matchwear-error.html;
+        error_page 409 =409 /errors/matchwear-error.html;
+        error_page 410 =410 /errors/matchwear-error.html;
+        error_page 411 =411 /errors/matchwear-error.html;
+        error_page 412 =412 /errors/matchwear-error.html;
+        error_page 413 =413 /errors/matchwear-error.html;
+        error_page 414 =414 /errors/matchwear-error.html;
+        error_page 415 =415 /errors/matchwear-error.html;
+        error_page 416 =416 /errors/matchwear-error.html;
+        error_page 421 =421 /errors/matchwear-error.html;
+        error_page 422 =422 /errors/matchwear-error.html;
+        error_page 423 =423 /errors/matchwear-error.html;
+        error_page 424 =424 /errors/matchwear-error.html;
+        error_page 426 =426 /errors/matchwear-error.html;
+        error_page 428 =428 /errors/matchwear-error.html;
+        error_page 429 =429 /errors/matchwear-error.html;
+        location = /errors/matchwear-error.html {
+            root /etc/nginx;
+            internal;
+            access_log off;
+        }
+
+        # Users internal (бот за границей, cron): без Referer — не $api_referer_block; доступ по X-Internal-Token в users-service.
+        location /api/users/internal/ {
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, X-Internal-Token' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            set $users_backend "users-service:8001";
+            rewrite ^/api/users/(.*) /$1 break;
+            proxy_pass http://$users_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Internal-Token $http_x_internal_token;
+
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, X-Internal-Token' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+
+            proxy_pass_request_headers on;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=users_api burst=20 nodelay;
+        }
+
+        # Users Service (с динамическим DNS разрешением)
+        location /api/users/ {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+            
+            set $users_backend "users-service:8001";
+            rewrite ^/api/users/(.*) /$1 break;
+            proxy_pass http://$users_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+            
+            # Передаем все заголовки для авторизации
+            proxy_pass_request_headers on;
+            
+            # Таймауты для надежности
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=users_api burst=20 nodelay;
+        }
+
+        # Отдельный, более строгий лимит для логина админов
+        location = /api/users/admin/login {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+
+            set $users_backend "users-service:8001";
+            rewrite ^/api/users/(.*) /$1 break;
+            proxy_pass http://$users_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+
+            proxy_pass_request_headers on;
+
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            # Строгий rate-limit для логина админов
+            limit_req zone=admin_login_limit burst=5 nodelay;
+        }
+
+        # StoreKPLite: сервис статистики удалён
+        location /api/stats/ {
+            return 404;
+        }
+
+        # Старый URL превью товара → канонический /share/catalog/ (без /api/products)
+        location /api/products/share/catalog/ {
+            rewrite ^/api/products/share/catalog/(.*)$ /share/catalog/$1 permanent;
+        }
+
+        # HTML Open Graph для шаринга товара: Referer часто пустой (адресная строка, боты) — не применяем $api_referer_block
+        location ^~ /share/catalog/ {
+            if ($request_method !~ ^(GET|HEAD)$) {
+                return 405;
+            }
+
+            set $products_backend "products-service:8002";
+            proxy_pass http://$products_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            proxy_pass_request_headers on;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=products_api burst=40 nodelay;
+        }
+
+        # Products Service internal endpoints:
+        # для внутренних скриптов (cron/cli) Referer часто пустой, поэтому
+        # не блокируем по $api_referer_block и опираемся на X-Internal-Token в backend.
+        location /api/products/internal/ {
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, X-Internal-Token' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            set $products_backend "products-service:8002";
+            rewrite ^/api/products/(.*) /$1 break;
+            proxy_pass http://$products_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Internal-Token $http_x_internal_token;
+
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With, X-Internal-Token' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+
+            proxy_pass_request_headers on;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=products_api burst=40 nodelay;
+        }
+
+        # Products Service (с динамическим DNS разрешением)
+        location /api/products/ {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+            
+            set $products_backend "products-service:8002";
+            rewrite ^/api/products/(.*) /$1 break;
+            proxy_pass http://$products_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+            
+            # Передаем все заголовки для авторизации
+            proxy_pass_request_headers on;
+            
+            # Таймауты для надежности
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=products_api burst=40 nodelay;
+        }
+
+        # ЮKassa webhook — без Referer с их сторон; защита подписью в приложении
+        location = /api/finance/payments/webhook {
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            set $finance_backend "finance-service:8003";
+            rewrite ^/api/finance/(.*) /$1 break;
+            proxy_pass http://$finance_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'POST, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+
+            proxy_pass_request_headers on;
+
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=finance_api burst=20 nodelay;
+        }
+
+        # Finance Service (с динамическим DNS разрешением)
+        location /api/finance/ {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+            
+            set $finance_backend "finance-service:8003";
+            rewrite ^/api/finance/(.*) /$1 break;
+            proxy_pass http://$finance_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+            
+            # Передаем все заголовки для авторизации
+            proxy_pass_request_headers on;
+            
+            # Таймауты для надежности
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=finance_api burst=20 nodelay;
+        }
+
+        # Support Service (с динамическим DNS разрешением)
+        location /api/support/ {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+            
+            set $support_backend "support-service:8004";
+            rewrite ^/api/support/(.*) /$1 break;
+            proxy_pass http://$support_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+            
+            # Передаем все заголовки для авторизации
+            proxy_pass_request_headers on;
+            
+            # Таймауты для надежности
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=support_api burst=20 nodelay;
+        }
+
+        # StoreKPLite: сервис AI-примерки удалён
+        location ^~ /api/tryon/ {
+            return 404;
+        }
+
+        # Delivery Service (с динамическим DNS разрешением)
+        location /api/delivery/ {
+            # Обработка preflight OPTIONS запросов
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+                add_header 'Access-Control-Max-Age' 1728000 always;
+                add_header 'Content-Type' 'text/plain; charset=utf-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            if ($api_referer_block) {
+                return 403;
+            }
+
+            set $delivery_backend "delivery-service:8005";
+            rewrite ^/api/delivery/(.*) /$1 break;
+            proxy_pass http://$delivery_backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # CORS заголовки
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, PATCH, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, X-Requested-With' always;
+            add_header 'Access-Control-Expose-Headers' 'Authorization' always;
+
+            # Передаем все заголовки для авторизации
+            proxy_pass_request_headers on;
+
+            # Таймауты для надежности
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+
+            limit_req zone=delivery_api burst=20 nodelay;
+        }
+
+
+        # Telegram Mini App (React, miniapp_tg)
+        location /miniapp/ {
+            set $miniapp_backend "miniapp_tg:80";
+            proxy_pass http://$miniapp_backend$request_uri;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+
+        location = /miniapp {
+            return 301 /miniapp/;
+        }
+
+        # Опечатка /miniap — в браузере не миниапп; сразу на корень (tgWebAppData всё равно только на /miniapp/)
+        location = /miniap {
+            return 302 /;
+        }
+
+        # Admin React Frontend — скрытый путь (не публикуйте URL)
+        # Доступ: /x9d4k2m7p1/admin/
+        # Важно: статика SPA (в т.ч. *.js) всё равно отдаётся браузеру до «логина в приложении».
+        # Чтобы не разглядывали бандл без отдельной проверки — только внешний слой: VPN, allowlist IP,
+        # или auth_basic на этот location (+ отдельный htpasswd), см. документацию nginx auth_basic.
+        location /x9d4k2m7p1/admin/ {
+            set $admin_react_backend "admin_react:80";
+            proxy_pass http://$admin_react_backend$request_uri;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_connect_timeout 5s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
+        }
+        location = /x9d4k2m7p1/admin {
+            return 301 /x9d4k2m7p1/admin/;
+        }
+
+        # Статические файлы (загруженные изображения)
+        location /uploads/ {
+            limit_req zone=uploads_static burst=100 nodelay;
+
+            alias /app/uploads/;
+            expires 30d;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+
+        # Фавикон в корне домена (роботы часто запрашивают /favicon.ico без разбора HTML)
+        # Файл: nginx/static/favicon.ico (генерация: miniapp_tg/scripts/build_applogo_ico.py)
+        location = /favicon.ico {
+            alias /etc/nginx/site-root-static/favicon.ico;
+            default_type image/vnd.microsoft.icon;
+            add_header Cache-Control "public, max-age=604800";
+        }
+
+        # Sitemap / robots с краевого nginx — гарантированно не index.html от SPA
+        location = /sitemap.xml {
+            alias /etc/nginx/site-root-static/sitemap.xml;
+            default_type application/xml;
+            charset utf-8;
+            add_header Cache-Control "public, max-age=3600";
+        }
+        location = /robots.txt {
+            alias /etc/nginx/site-root-static/robots.txt;
+            default_type text/plain;
+            charset utf-8;
+            add_header Cache-Control "public, max-age=3600";
+        }
+
+        # Яндекс.Вебмастер: файл в корне домена (https://matchwear.ru/yandex_…html)
+        location = /yandex_58c18896a9b301d6.html {
+            alias /etc/nginx/site-root-static/yandex_58c18896a9b301d6.html;
+            default_type text/html;
+            charset utf-8;
+            add_header Cache-Control "no-store";
+        }
+
+        ##BEGIN_BOT_API_PROXY##
+        # РФ: POST/GET на /bot-api/* → зарубежный bridge (NGINX_BOT_API_PROXY_PASS, полный URL с хвостовым /).
+        # Иначе запрос уходит в location / → miniapp → 405 на POST /bot-api/...
+        location ^~ /bot-api/ {
+            proxy_http_version 1.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 120s;
+            proxy_connect_timeout 15s;
+            proxy_send_timeout 120s;
+            client_max_body_size 50m;
+            proxy_ssl_server_name on;
+            proxy_ssl_verify off;
+            proxy_pass ${NGINX_BOT_API_PROXY_PASS};
+        }
+        ##END_BOT_API_PROXY##
+
+        # Браузерный фронт в корне (miniapp_tg, PUBLIC_URL=/): HashRouter — маршруты в #, на сервер почти всегда / + статика.
+        # /miniapp/ — отдельная точка для Telegram. Иное в этом server → 404 (не подсовываем SPA сканерам).
+        # Добавили файл в public/ не под этими префиксами — добавьте location или префикс сюда.
+        location = / {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /index.html {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location ^~ /static/ {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location ^~ /applogo/ {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location ^~ /fonts/ {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location ^~ /profile-fallbacks/ {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /manifest.webmanifest {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /asset-manifest.json {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /sw.js {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /public-offer.md {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /policy.md {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+        location = /.well-known/security.txt {
+            set $miniapp_backend "miniapp_tg:80";
+            include /etc/nginx/inc/proxy_miniapp_browser.conf;
+            proxy_pass http://$miniapp_backend$request_uri;
+        }
+
+        location / {
+            return 404;
+        }
+    }
+}
+

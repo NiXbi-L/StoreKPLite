@@ -1,0 +1,11 @@
+# Продакшен: при смене домена обновите и копию nginx/static/robots.txt
+User-agent: *
+Allow: /
+
+# JSON API на том же origin — не тратим краулинг
+Disallow: /api/
+
+# Яндекс: канонический хост (без https://)
+Host: matchwear.ru
+
+Sitemap: https://matchwear.ru/sitemap.xml

@@ -1,0 +1,49 @@
+# Local folders
+/MW/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs and runtime artifacts
+*.log
+*.pid
+*.out
+*.err
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node / frontend
+**/node_modules/
+**/build/
+**/dist/
+**/.cache/
+**/.parcel-cache/
+**/.turbo/
+**/.next/
+
+# Environment and secrets
+**/.env
+**/.env.local
+**/.env.*.local
+**/*.pem
+**/*.key
+**/*.crt
+**/secrets/
+
+# Docker overrides
+docker-compose.override.yml
+
+# Local extracted notes
+docs/
+docs_extract.txt
+pdf_extract.txt

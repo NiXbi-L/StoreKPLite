@@ -1,0 +1,300 @@
+.users-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.users-header h1 {
+  margin: 0;
+  color: #333;
+}
+
+.btn-refresh {
+  padding: 0.5rem 1rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-refresh:hover {
+  background-color: #2980b9;
+}
+
+.users-total-hint {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 1rem;
+}
+
+.users-load-sentinel {
+  height: 4px;
+  margin: 1rem 0;
+}
+
+.search-box {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.users-table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table thead {
+  background-color: #f8f9fa;
+}
+
+.users-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.users-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.users-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+.btn-view,
+.btn-delete {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-right: 0.5rem;
+}
+
+.btn-view {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-view:hover {
+  background-color: #2980b9;
+}
+
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #c0392b;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #fcc;
+}
+
+.user-detail-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.detail-row {
+  display: flex;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row label {
+  font-weight: 600;
+  width: 250px;
+  color: #555;
+}
+
+.detail-row div {
+  flex: 1;
+  color: #333;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Карточки для мобильных */
+.users-cards-container {
+  display: none;
+}
+
+.user-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-card-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #eee;
+}
+
+.user-card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.user-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.user-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-card-field label {
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.user-card-field > div {
+  color: #333;
+}
+
+.user-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.user-card-actions button {
+  width: 100%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .users-page {
+    padding: 10px;
+  }
+
+  .users-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .users-header h1 {
+    font-size: 20px;
+  }
+
+  .search-input {
+    max-width: 100%;
+  }
+
+  /* Скрываем таблицу на мобильных */
+  .users-table-container {
+    display: none;
+  }
+
+  /* Показываем карточки на мобильных */
+  .users-cards-container {
+    display: block;
+  }
+
+  .user-detail-card {
+    padding: 1rem;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .detail-row label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
+
+  .detail-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .users-page {
+    padding: 5px;
+  }
+
+  .users-header h1 {
+    font-size: 18px;
+  }
+
+  .user-card {
+    padding: 0.875rem;
+  }
+
+  .user-card-header h3 {
+    font-size: 1rem;
+  }
+}

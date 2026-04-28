@@ -1,0 +1,70 @@
+/* Оверлей внизу экрана, не участвует в лейауте */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 16px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + var(--tg-content-safe-area-inset-bottom, 0px));
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 90px;
+  height: auto;
+  background: var(--bg-primary);
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.tabbar--hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tabbar__btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  height: 50px;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 100%;
+  text-align: center;
+}
+
+.tabbar__btn:focus,
+.tabbar__btn:focus-visible {
+  outline: none;
+}
+
+.tabbar__btn--active {
+  color: var(--text-primary);
+}
+
+.tabbar__icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.tabbar__label {
+  display: block;
+  white-space: nowrap;
+}

@@ -1,0 +1,305 @@
+/* Страница выбора ПВЗ CDEK — карта на весь контейнер */
+.cdek-map-page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* Поиск: верх safe-area и шапка main-page уже снаружи .main-page__content — здесь только top:0 + padding-top */
+.cdek-map-page__search-wrap {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+  box-sizing: border-box;
+}
+
+.cdek-map-page__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 24px;
+  padding: 10px 16px;
+  min-height: 50px;
+  background: var(--input-bg);
+  box-sizing: border-box;
+}
+
+.cdek-map-page__search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 0.75;
+  color: var(--input-text);
+}
+
+.cdek-map-page__search-input::placeholder {
+  color: var(--input-label, var(--text-tertiary));
+}
+
+.cdek-map-page__container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.cdek-map-page__map {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.cdek-map-page__map-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  background: var(--bg-secondary, #f5f5f5);
+  z-index: 50;
+  font-family: var(--font-family);
+}
+
+.cdek-map-page__map-error-text {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cdek-map-page__map-error-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  max-width: 320px;
+}
+
+.cdek-map-page__map-error-hint strong {
+  word-break: break-all;
+}
+
+.cdek-map-page__loading,
+.cdek-map-page__error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  z-index: 10;
+}
+
+.cdek-map-page__error {
+  color: var(--border-error);
+}
+
+/* Плашка информации ПВЗ на карте */
+.cdek-map-balloon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 8px;
+  width: 93px;
+  min-height: 35px;
+  background: var(--text-primary);
+  opacity: 0.8;
+  box-sizing: border-box;
+}
+
+.cdek-map-balloon--selected {
+  border: 1px solid var(--border-focus);
+}
+
+.cdek-map-balloon__name {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 133%;
+  color: var(--bg-primary);
+}
+
+.cdek-map-balloon__info {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 160%;
+  color: var(--text-tertiary);
+}
+
+/* Контейнер маркера: плашка сверху, пин снизу; якорь — низ по центру (кончик пина на точке) */
+.cdek-map-marker-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transform: translate(-50%, -100%);
+}
+
+.cdek-map-marker-wrap .cdek-map-balloon {
+  margin-bottom: 2px;
+}
+
+.cdek-map-marker-wrap .cdek-map-marker-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.cdek-map-marker-wrap .cdek-map-marker-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Кластер: круг с количеством точек */
+.cdek-map-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+}
+
+.cdek-map-cluster__count {
+  line-height: 1;
+}
+
+/* Нижняя панель подтверждения выбора ПВЗ */
+.cdek-map-confirm-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 16px;
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 0;
+  box-sizing: border-box;
+  box-shadow: 0 -4px 4px 0 rgba(0, 0, 0, 0.25);
+  background: var(--bg-primary);
+  z-index: 50;
+}
+
+.cdek-map-confirm-sheet__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cdek-map-confirm-sheet__row--head {
+  flex-shrink: 0;
+}
+
+.cdek-map-confirm-sheet__name {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 100%;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.cdek-map-confirm-sheet__close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cdek-map-confirm-sheet__close:hover {
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.06));
+}
+
+.cdek-map-confirm-sheet__close:active {
+  opacity: 0.8;
+}
+
+.cdek-map-confirm-sheet__address {
+  margin: 0;
+  width: 100%;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+}
+
+.cdek-map-confirm-sheet__worktime-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cdek-map-confirm-sheet__worktime-label {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-primary);
+}
+
+.cdek-map-confirm-sheet__worktime-text {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 114%;
+  color: var(--text-secondary);
+}
+
+.cdek-map-confirm-sheet__btn {
+  width: 100%;
+}

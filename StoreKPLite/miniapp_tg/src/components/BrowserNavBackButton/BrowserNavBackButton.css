@@ -1,0 +1,32 @@
+.browser-nav-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tg-theme-link-color, #2481cc);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.browser-nav-back:active {
+  opacity: 0.72;
+}
+
+@media (hover: hover) {
+  .browser-nav-back:hover {
+    background: var(--bg-secondary, rgba(0, 0, 0, 0.06));
+  }
+}
+
+.browser-nav-back__icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+}

@@ -1,0 +1,227 @@
+/* SF Pro (файлы SF-Pro-Display, в макете — SF Pro) */
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'SF Pro';
+  src: url('../public/fonts/otf/SF-Pro-Display-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* Layout (TG / iOS). В обычном браузере public/index.html задаёт --tg-content-safe-area-inset-top: 16px и --ios-safe-area-inset-top: 0px на <html>. В WebView значения переопределяет Telegram SDK / App.js. */
+  --ios-safe-area-inset-top: 0px;
+
+  /* Акцент (ссылки, кнопки) */
+  --accent: #2481cc;
+  --accent-hover: #1a6aad;
+  --accent-muted: rgba(36, 129, 204, 0.15);
+
+  /* Design system — backgrounds */
+  --bg-primary: #fff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f5f5f5;
+
+  /* Design system — text */
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #a3a3a3;
+  --text-disabled: #a3a3a3;
+
+  /* Design system — borders */
+  --border-light: #e5e5e5;
+  --border-medium: #d4d4d4;
+  --border-heavy: #a3a3a3;
+  --border-focus: #3b82f6;
+  --border-error: #ef4444;
+
+  /* Design system — card */
+  --card-bg: #fff;
+  --card-border: #e5e5e5;
+  --card-shadow: rgba(0, 0, 0, 0.05);
+
+  /* Design system — button primary */
+  --button-primary-bg: #171717;
+  --button-primary-hover: #404040;
+  --button-primary-pressed: #262626;
+  --button-primary-text: #fff;
+  --button-spinner-ring: rgba(255, 255, 255, 0.35);
+  --button-spinner-top: #fff;
+
+  /* Design system — button secondary */
+  --button-secondary-bg: #f0f0f0;
+  --button-secondary-border: #e0e0e0;
+  --button-secondary-hover: #d0d0d0;
+  --button-secondary-text: #171717;
+
+  /* Design system — button ghost */
+  --button-ghost-hover: #f5f5f5;
+
+  /* Design system — input */
+  --input-bg: #fff;
+  --input-bg-disabled: #f5f5f5;
+  --input-border: #d4d4d4;
+  --input-border-hover: #a3a3a3;
+  --input-border-focus: #3b82f6;
+  --input-border-error: #ef4444;
+  --input-placeholder: #a3a3a3;
+  --input-text: #171717;
+  --input-label: #525252;
+
+  /* Design system — text on dark */
+  --text-dark-primary: #fff;
+  --text-dark-secondary: #d4d4d4;
+  --text-dark-tertiary: #737373;
+
+  /* Typography */
+  --font-family: "SF Pro", sans-serif;
+
+  color-scheme: light;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Прячем нативные скроллбары, сохраняя скролл */
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html,
+body {
+  height: 100dvh;
+  height: var(--vvh, 100vh);
+  overflow: hidden;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  height: 100dvh;
+  height: var(--vvh, 100vh);
+  overflow: hidden;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Экран загрузки ресурсов (шрифты) перед показом приложения */
+.resources-loading {
+  height: 100dvh;
+  height: var(--vvh, 100vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--bg-primary);
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  html.app-shell-browser #root {
+    background-color: var(--bg-secondary);
+  }
+
+  html.app-shell-browser .resources-loading {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    box-shadow:
+      0 0 0 1px var(--border-light),
+      0 8px 32px rgba(0, 0, 0, 0.07);
+  }
+}
+
+@supports not (height: 100dvh) {
+  .resources-loading {
+    height: 100vh;
+  }
+}
+
+.resources-loading__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--text-primary);
+  border-radius: 50%;
+  animation: resources-loading-spin 0.8s linear infinite;
+}
+
+.resources-loading__text {
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@keyframes resources-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

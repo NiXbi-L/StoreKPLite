@@ -1,0 +1,99 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 200%;
+  text-align: center;
+  color: var(--button-primary-text);
+  width: 100%;
+  box-sizing: border-box;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.btn:focus {
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Size */
+.btn--large {
+  height: 50px;
+}
+
+.btn--small {
+  height: 45px;
+}
+
+/* Primary */
+.btn--primary {
+  background: var(--button-primary-bg);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--button-primary-hover);
+}
+
+.btn--primary:active:not(:disabled) {
+  background: var(--button-primary-pressed);
+}
+
+/* Secondary — те же параметры, 80% opacity */
+.btn--secondary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  opacity: 0.8;
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background: var(--button-primary-hover);
+}
+
+.btn--secondary:active:not(:disabled) {
+  background: var(--button-primary-pressed);
+}
+
+/* Disabled — 80% opacity */
+.btn--disabled,
+.btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.btn--primary.btn--disabled,
+.btn--primary:disabled {
+  opacity: 0.8;
+}
+
+.btn__text {
+  display: block;
+}
+
+.btn--loading .btn__text {
+  opacity: 0.9;
+}
+
+.btn__spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--button-spinner-ring);
+  border-top-color: var(--button-spinner-top);
+  margin-right: 8px;
+  animation: btn-spinner 0.7s linear infinite;
+}
+
+@keyframes btn-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}

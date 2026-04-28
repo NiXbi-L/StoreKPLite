@@ -1,0 +1,48 @@
+.app-viewport {
+  width: 100%;
+  min-height: 100dvh;
+  min-height: var(--vvh, 100vh);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.app {
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 100dvh;
+  min-height: var(--vvh, 100vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-x: hidden;
+  background-color: var(--bg-primary);
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Браузер на широком экране: одна мобильная колонка; transform — контейнер для position:fixed внутри .app */
+@media (min-width: 640px) {
+  html.app-shell-browser .app-viewport {
+    align-items: center;
+    background-color: var(--bg-secondary);
+  }
+
+  html.app-shell-browser .app-viewport > .app {
+    width: 100%;
+    max-width: 430px;
+    flex: 0 1 auto;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    box-shadow:
+      0 0 0 1px var(--border-light),
+      0 8px 32px rgba(0, 0, 0, 0.07);
+  }
+}
+
+.app--loading {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,146 @@
+/* Высота ровно вьюпорт: иначе при min-height родитель .app (overflow:hidden) режет контент и скролл не появляется */
+.policy-page {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-primary, #fff);
+  width: 100%;
+}
+
+@supports not (height: 100dvh) {
+  .policy-page {
+    height: var(--vvh, 100vh);
+    max-height: var(--vvh, 100vh);
+  }
+}
+
+.policy-page__header {
+  flex-shrink: 0;
+  padding: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--ios-safe-area-inset-top, 0px)) 16px 12px;
+  background-color: var(--bg-primary, #fff);
+  border-bottom: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+}
+
+.policy-page__back {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  font-size: 15px;
+  color: var(--tg-theme-link-color, #2481cc);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.policy-page__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary, #071013);
+}
+
+.policy-page__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  padding-bottom: calc(var(--tg-content-safe-area-inset-bottom, 0px) + 24px);
+}
+
+.policy-page__loading,
+.policy-page__error {
+  font-size: 15px;
+  color: var(--text-secondary, #666);
+}
+
+.policy-page__error {
+  color: var(--tg-theme-destructive-text-color, #b00020);
+}
+
+.policy-page__content {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary, #071013);
+}
+
+.policy-page__content h1 {
+  font-size: 20px;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.policy-page__content h2 {
+  font-size: 17px;
+  margin: 20px 0 10px;
+  font-weight: 600;
+}
+
+.policy-page__content h3 {
+  font-size: 15px;
+  margin: 14px 0 8px;
+  font-weight: 600;
+}
+
+.policy-page__content p {
+  margin: 0 0 10px;
+}
+
+.policy-page__content ul,
+.policy-page__content ol {
+  margin: 0 0 10px;
+  padding-left: 24px;
+}
+
+.policy-page__content li {
+  margin-bottom: 4px;
+}
+
+.policy-page__content hr {
+  border: none;
+  border-top: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+  margin: 16px 0;
+}
+
+.policy-page__content strong {
+  font-weight: 600;
+}
+
+.policy-page__content em {
+  font-style: italic;
+}
+
+.policy-page__content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  display: block;
+}
+
+.policy-page__content th,
+.policy-page__content td {
+  border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.15));
+  padding: 8px;
+  text-align: left;
+  color: inherit;
+}
+
+.policy-page__content th {
+  font-weight: 600;
+  background: rgba(128, 128, 128, 0.18);
+}
+
+.policy-page__content tbody tr:nth-child(even) td {
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.policy-page__content tbody tr:nth-child(odd) td {
+  background: transparent;
+}

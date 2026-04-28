@@ -1,0 +1,94 @@
+# Автодеплой на сервер при push в master:
+# на сервере выполняется git pull и docker compose up -d --build
+#
+# Нужные секреты в GitHub: Settings → Secrets and variables → Actions:
+#   DEPLOY_HOST    — хост сервера (IP или домен)
+#   DEPLOY_USER    — SSH-пользователь
+#   DEPLOY_SSH_KEY — приватный ключ целиком (PEM), от -----BEGIN до -----END; многострочный секрет (LF).
+#   На сервере в ~/.ssh/authorized_keys у пользователя DEPLOY_USER должна быть строка из соответствующего .pub
+#   DEPLOY_PATH    — путь к репозиторию на сервере (например /home/user/TimoshkaStore)
+#   GH_TOKEN       — Personal Access Token (ghp_...) для git pull по HTTPS (если репо приватный)
+
+name: Deploy to server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deploy SSH secret is non-empty
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: test -n "$DEPLOY_SSH_KEY" || (echo 'DEPLOY_SSH_KEY пустой' && exit 1)
+      - name: Run git pull and docker compose on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          # Только key: файл в workspace с 600 не читает Docker (другой UID), с 644 — OpenSSH отказывается грузить ключ
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: DEPLOY_PATH,GH_TOKEN,REPO_SLUG
+          script: |
+            set -e
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            cd "$DEPLOY_PATH"
+            if [ -n "$GH_TOKEN" ]; then
+              git remote set-url origin "https://oauth2:${GH_TOKEN}@github.com/${REPO_SLUG}.git"
+            fi
+            git fetch origin
+            POLICY_CHANGED=0
+            if ! git diff --quiet HEAD origin/master -- miniapp_tg/public/policy.md; then
+              POLICY_CHANGED=1
+              echo "Обнаружено изменение miniapp_tg/public/policy.md — будет сброс принятия политики у пользователей."
+            fi
+            git reset --hard origin/master
+            if [ -n "$GH_TOKEN" ]; then
+              git remote set-url origin "https://github.com/${REPO_SLUG}.git"
+            fi
+            PRIVACY_RESET_PENDING=0
+            if [ "$POLICY_CHANGED" = "1" ]; then
+              if bash scripts/deploy_reset_privacy_policy_acceptance.sh; then
+                echo "Сброс флагов политики выполнен до сборки."
+              else
+                echo "Предупреждение: БД недоступна до сборки — сброс флагов политики отложен до после docker compose up -d."
+                PRIVACY_RESET_PENDING=1
+              fi
+            fi
+            # ДО сборки: только «висячие» образы. НЕ использовать image prune -af — удаляет все неиспользуемые
+            # образы и сильно бьёт по переиспользованию слоёв между сервисами на одном Dockerfile.
+            docker image prune -f
+            # Сборка: что не менялось — из кэша BuildKit; слой pip см. cache mount в api/Dockerfile
+            # Последовательная сборка (по одному образу), чтобы не забивать диск и RAM
+            # Все сервисы на api/Dockerfile — у каждого свой образ, собираем все, иначе products/finance/support/delivery не обновятся
+            docker compose build nginx
+            docker compose build users-service
+            docker compose build products-service
+            docker compose build finance-service
+            docker compose build support-service
+            docker compose build delivery-service
+            docker compose build miniapp_tg
+            docker compose up -d
+            if [ "$PRIVACY_RESET_PENDING" = "1" ]; then
+              bash scripts/deploy_reset_privacy_policy_acceptance.sh
+              echo "Сброс флагов политики выполнен после запуска контейнеров."
+            fi
+            docker image prune -f
+            DISK_PCT=$(df --output=pcent / | tail -1 | tr -d ' %')
+            if [ -n "$DISK_PCT" ] && [ "$DISK_PCT" -ge 85 ]; then
+              echo "Диск заполнен на ${DISK_PCT}%, полная очистка кэша сборки (builder + образы)"
+              docker builder prune -af
+              docker image prune -af
+            else
+              # Не чистить BuildKit при каждом деплое: раньше был prune until=2h — pip заново качался почти всегда.
+              echo "BuildKit cache сохранён (pip/слои); при необходимости вручную: docker builder prune"
+            fi
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REPO_SLUG: ${{ github.repository }}

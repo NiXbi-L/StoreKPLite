@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Технические работы — MatchWear</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 50%, #1e2a24 100%);
+            color: #e8e8e8;
+            padding: 24px;
+        }
+        .page {
+            text-align: center;
+            max-width: 380px;
+        }
+        .visual {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 28px;
+            position: relative;
+        }
+        .ring {
+            position: absolute;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: rgba(255,255,255,0.6);
+        }
+        .ring--1 {
+            inset: 0;
+            animation: spin 2.2s linear infinite;
+        }
+        .ring--2 {
+            inset: 12px;
+            animation: spin 1.8s linear infinite reverse;
+            border-top-color: rgba(255,255,255,0.4);
+        }
+        .ring--3 {
+            inset: 24px;
+            animation: spin 2.5s linear infinite;
+            border-top-color: rgba(255,255,255,0.25);
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+        }
+        .lead {
+            color: rgba(255,255,255,0.7);
+            line-height: 1.5;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .hint {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="visual">
+            <div class="ring ring--1"></div>
+            <div class="ring ring--2"></div>
+            <div class="ring ring--3"></div>
+        </div>
+        <p class="badge">Технические работы</p>
+        <h1>Мы что‑то улучшаем</h1>
+        <p class="lead">Сервис ненадолго недоступен. Скоро всё заработает — загляните позже.</p>
+        <p class="hint">MatchWear</p>
+    </div>
+</body>
+</html>

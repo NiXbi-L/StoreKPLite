@@ -1,0 +1,169 @@
+.cart-page {
+  width: 100%;
+  min-height: 100%;
+  background: var(--bg-primary);
+  /* Отступ сверху: safe area + шапка (лого) + небольшой зазор под хедер разделов */
+  padding-top: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--ios-safe-area-inset-top, 0px) + 24px);
+  /* Отступ снизу: фиксированный блок оформления + таббар, с небольшим запасом */
+  padding-bottom: 164px;
+  box-sizing: border-box;
+}
+
+.cart-page__inner {
+  padding: 16px;
+}
+
+.cart-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px;
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  /* Совпадаем с логикой main-app-header: safe area от Telegram + небольшой отступ */
+  top: calc(var(--tg-content-safe-area-inset-top, 0px) + var(--ios-safe-area-inset-top, 0px) + 32px + 16px);
+  z-index: 15;
+}
+
+.cart-page__tab {
+  flex: 1;
+  height: 36px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.cart-page__tab--active {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-color: transparent;
+}
+.cart-page__toast {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.cart-page__toast-inner {
+  max-width: 320px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.9); /* красный оттенок */
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 12px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.cart-page__checkout {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 104px; /* выше таббара, с дополнительным отступом */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.cart-page__checkout-inner {
+  width: calc(100% - 32px);
+  max-width: 480px;
+  border-radius: 16px;
+  position: relative;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.cart-page__checkout-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--text-primary);
+  opacity: 0.5;
+}
+
+.cart-page__checkout-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  gap: 8px;
+}
+
+.cart-page__checkout-price-wrap,
+.cart-page__checkout-btn-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-page__checkout-price {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 100%;
+  text-align: center;
+  color: var(--text-dark-primary);
+}
+
+.cart-page__checkout-btn {
+  height: 45px;
+}
+
+/* Выравнивание текста внутри кнопки «Перейти к оформлению» по центру по вертикали */
+.cart-page__checkout-btn .btn__text {
+  line-height: 100%;
+}
+
+.cart-page__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-page__list-item {
+  margin: 0;
+  padding: 0;
+}
+
+.cart-page__loading,
+.cart-page__empty {
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.cart-page__error {
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: #c00;
+  margin: 0;
+}

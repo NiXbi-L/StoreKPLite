@@ -1,0 +1,98 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Общие адаптивные стили */
+@media (max-width: 768px) {
+  /* Улучшаем скролл для таблиц */
+  .table-container,
+  .orders-table-container,
+  .users-table-container,
+  .admins-table-container,
+  .catalog-table-container {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Улучшаем видимость скролла */
+  .table-container::-webkit-scrollbar,
+  .orders-table-container::-webkit-scrollbar,
+  .users-table-container::-webkit-scrollbar,
+  .admins-table-container::-webkit-scrollbar,
+  .catalog-table-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .table-container::-webkit-scrollbar-track,
+  .orders-table-container::-webkit-scrollbar-track,
+  .users-table-container::-webkit-scrollbar-track,
+  .admins-table-container::-webkit-scrollbar-track,
+  .catalog-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .table-container::-webkit-scrollbar-thumb,
+  .orders-table-container::-webkit-scrollbar-thumb,
+  .users-table-container::-webkit-scrollbar-thumb,
+  .admins-table-container::-webkit-scrollbar-thumb,
+  .catalog-table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  /* Общие стили для страниц */
+  .page-container,
+  .content-container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 20px !important;
+  }
+
+  h2 {
+    font-size: 18px !important;
+  }
+
+  /* Кнопки на полную ширину на мобильных */
+  button,
+  .btn {
+    min-height: 44px; /* Улучшает тач-таргет */
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container,
+  .content-container {
+    padding: 5px;
+  }
+
+  h1 {
+    font-size: 18px !important;
+  }
+
+  h2 {
+    font-size: 16px !important;
+  }
+}
+

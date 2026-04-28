@@ -1,0 +1,11 @@
+# Не тащить в контекст сборки (node_modules ставим через npm ci в образе)
+node_modules
+build
+npm-debug.log*
+yarn-debug.log*
+.env
+.env.*
+.git
+.gitignore
+*.md
+.DS_Store

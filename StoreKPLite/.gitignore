@@ -1,0 +1,289 @@
+# Environment variables
+.env
+scripts/loadtest/.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.ENV/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Uploads and user-generated content (but keep directory structure)
+uploads/
+uploads/**/*
+!uploads/.gitkeep
+!uploads/**/.gitkeep
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Redis dump
+dump.rdb
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# Локальные оверрайды конфигурации — только в корне репозитория (шаблонный паттерн local_settings.py
+# раньше матчил любой файл с таким именем в дереве и выкинул из git роутер доставки).
+config.local.py
+settings.local.py
+/local_settings.py
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Translations
+*.mo
+*.pot
+
+# Flask stuff (if used in future)
+instance/
+.webassets-cache
+
+# Scrapy stuff (if used in future)
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================================
+# Node.js / React / TypeScript
+# ============================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Production builds
+build/
+dist/
+.next/
+out/
+
+# React / Next.js
+.vercel
+.next
+out
+build
+
+# Testing
+coverage/
+.nyc_output
+*.lcov
+
+# ESLint cache
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ============================================
+# Docker volumes and data
+# ============================================
+
+# Docker volumes (если они созданы локально)
+docker_volumes/
+volumes/
+
+# Database data directories
+*.sql.gz
+*.dump
+
+# ============================================
+# Project specific
+# ============================================
+
+# Приватный гайд по эксплуатации (пароли, SSH) — не коммитить; хранить копию вне репозитория
+HANDOVER_OPERATIONS_PRIVATE.md
+
+# Deploy: exported Docker images and volume backups (tar), keep deploy/*.ps1 and deploy/*.md in repo
+deploy/images/
+deploy/backup/
+
+# Старые файлы бота (если нужно сохранить для истории, удалите эту строку)
+# bot_tg/routers/*_old.py
+# bot_tg/routers/*_old_new.py
+
+# Миграции SQL (можно коммитить, но если не нужно - раскомментируйте)
+# migrations/*.sql
+
+garment_style_classifier/my_photos/*
